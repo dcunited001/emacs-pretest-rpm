@@ -4,33 +4,26 @@
 Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
-Version:       27.2
-Release:       9%{?dist}
+Version:       28.0.90
+Release:       1%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
-Source0:       https://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.xz
-Source1:       https://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.xz.sig
-# generate the keyring via:
-# wget https://ftp.gnu.org/gnu/gnu-keyring.gpg
-# gpg2 --keyring ./gnu-keyring.gpg --armor --export E6C9029C363AD41D787A8EBB91C1262F01EB8D39 > gpgkey-E6C9029C363AD41D787A8EBB91C1262F01EB8D39.gpg
-Source2:       gpgkey-E6C9029C363AD41D787A8EBB91C1262F01EB8D39.gpg
+Source0:       https://alpha.gnu.org/gnu/emacs/pretest/emacs-%{version}.tar.xz
+Source1:       https://alpha.gnu.org/gnu/emacs/pretest/emacs-%{version}.tar.xz.sig
+# get the Stefan Kangas' key
+# wget https://keys.openpgp.org/vks/v1/by-fingerprint/CEA1DE21AB108493CC9C65742E82323B8F4353EE -O gpgkey-CEA1DE21AB108493CC9C65742E82323B8F4353EE.gpg
+Source2:       gpgkey-CEA1DE21AB108493CC9C65742E82323B8F4353EE.gpg
 Source4:       dotemacs.el
 Source5:       site-start.el
 Source6:       default.el
 # Emacs Terminal Mode, #551949, #617355
 Source7:       emacs-terminal.desktop
 Source8:       emacs-terminal.sh
-Source10:      %{name}.appdata.xml
+# Source10:      %{name}.appdata.xml
 # rhbz#713600
 Patch1:        emacs-spellchecker.patch
 Patch2:        emacs-system-crypto-policies.patch
-Patch3:        emacs-glibc-2.34.patch
-Patch4:        emacs-libdir-vs-systemd.patch
-Patch5:        https://lists.gnu.org/archive/html/bug-gnu-emacs/2021-04/txt0tY7uKvJKS.txt#./emacs-modula2.patch
-# cherry picked from 216c65b135c2b0be7e048cdc6683873b03b99b9a
-Patch6:        Use-a-64KB-page-size-for-pdump.patch
-# cherry picked from f97e07ea807cc6d38774a3888a15091b20645ac
-Patch7:        0001-Port-alternate-signal-stack-to-upcoming-glibc-2.34.patch
+Patch3:        emacs-libdir-vs-systemd.patch
 
 BuildRequires: gcc
 BuildRequires: atk-devel
@@ -73,6 +66,7 @@ BuildRequires: libacl-devel
 BuildRequires: harfbuzz-devel
 BuildRequires: jansson-devel
 BuildRequires: systemd-devel
+BuildRequires: libgccjit-devel
 
 BuildRequires: gtk3-devel
 BuildRequires: webkit2gtk3-devel
@@ -92,6 +86,7 @@ Requires:      info
 # Emacs doesn't run without dejavu-sans-mono-fonts, rhbz#732422
 Requires:      desktop-file-utils
 Requires:      dejavu-sans-mono-fonts
+Requires:      libgccjit
 Requires(preun): %{_sbindir}/alternatives
 Requires(posttrans): %{_sbindir}/alternatives
 Requires:      emacs-common = %{epoch}:%{version}-%{release}
@@ -102,6 +97,7 @@ Provides:      emacs(bin) = %{epoch}:%{version}-%{release}
 %define bytecompargs -batch --no-init-file --no-site-file -f batch-byte-compile
 %define pkgconfig %{_datadir}/pkgconfig
 %define emacs_libexecdir %{_libexecdir}/emacs/%{version}/%{_host}
+%define native_lisp %{_libdir}/emacs/%{version}/native-lisp
 
 %description
 Emacs is a powerful, customizable, self-documenting, modeless text
@@ -113,6 +109,7 @@ This package provides an emacs binary with support for X windows.
 
 %package lucid
 Summary:       GNU Emacs text editor with LUCID toolkit X support
+Requires:      libgccjit
 Requires(preun): %{_sbindir}/alternatives
 Requires(posttrans): %{_sbindir}/alternatives
 Requires:      emacs-common = %{epoch}:%{version}-%{release}
@@ -129,6 +126,7 @@ using LUCID toolkit.
 
 %package nox
 Summary:       GNU Emacs text editor without X support
+Requires:      libgccjit
 Requires(preun): %{_sbindir}/alternatives
 Requires(posttrans): %{_sbindir}/alternatives
 Requires:      emacs-common = %{epoch}:%{version}-%{release}
@@ -196,11 +194,7 @@ Development header files for Emacs.
 
 %patch1 -p1 -b .spellchecker
 %patch2 -p1 -b .system-crypto-policies
-%patch3 -p1 -b .glibc2.34
-%patch4 -p1 -b .libdir-vs-systemd
-%patch5 -p1
-%patch6 -p1
-%patch7 -p1
+%patch3 -p1 -b .libdir-vs-systemd
 autoconf
 
 grep -v "tetris.elc" lisp/Makefile.in > lisp/Makefile.in.new \
@@ -252,9 +246,9 @@ LDFLAGS=-Wl,-z,relro;  export LDFLAGS;
 
 %configure --with-dbus --with-gif --with-jpeg --with-png --with-rsvg \
            --with-tiff --with-xft --with-xpm --with-x-toolkit=gtk3 --with-gpm=no \
-           --with-xwidgets --with-modules --with-harfbuzz --with-cairo --with-json
-make bootstrap
-%{setarch} %make_build
+           --with-xwidgets --with-modules --with-harfbuzz --with-cairo --with-json \
+           --with-native-compilation
+%{setarch} %make_build # NATIVE_FULL_AOT=1
 cd ..
 
 # Build Lucid binary
@@ -265,16 +259,16 @@ LDFLAGS=-Wl,-z,relro;  export LDFLAGS;
 
 %configure --with-dbus --with-gif --with-jpeg --with-png --with-rsvg \
            --with-tiff --with-xft --with-xpm --with-x-toolkit=lucid --with-gpm=no \
-           --with-modules --with-harfbuzz --with-cairo --with-json
-make bootstrap
-%{setarch} %make_build
+           --with-modules --with-harfbuzz --with-cairo --with-json \
+           --with-native-compilation
+%{setarch} %make_build # NATIVE_FULL_AOT=1
 cd ..
 
 # Build binary without X support
 mkdir build-nox && cd build-nox
 ln -s ../configure .
-%configure --with-x=no --with-modules --with-json
-%{setarch} %make_build
+%configure --with-x=no --with-modules --with-json --with-native-compilation
+%{setarch} %make_build # NATIVE_FULL_AOT=1
 cd ..
 
 # Remove versioned file so that we end up with .1 suffix and only one DOC file
@@ -357,10 +351,10 @@ mkdir -p %{buildroot}/%{pkgconfig}
 install -p -m 0644 emacs.pc %{buildroot}/%{pkgconfig}
 
 # Install app data
-mkdir -p %{buildroot}/%{_datadir}/appdata
-cp -a %SOURCE10 %{buildroot}/%{_datadir}/appdata
-# Upstream ships its own appdata file, but it's quite terse.
-rm %{buildroot}/%{_metainfodir}/emacs.appdata.xml
+# mkdir -p %{buildroot}/%{_datadir}/appdata
+# cp -a %SOURCE10 %{buildroot}/%{_datadir}/appdata
+# # Upstream ships its own appdata file, but it's quite terse.
+# rm %{buildroot}/%{_metainfodir}/emacs.appdata.xml
 
 # Install rpm macro definition file
 mkdir -p %{buildroot}%{_rpmconfigdir}/macros.d
@@ -401,8 +395,22 @@ cat el-*-files common-lisp-dir-files > el-filelist
 # Remove old icon
 rm %{buildroot}%{_datadir}/icons/hicolor/scalable/mimetypes/emacs-document23.svg
 
+# Remove the installed native compiled Lisp of GTK+
+# rm -r %{buildroot}%{native_lisp}/*
+
+# Install native compiled Lisp of all builds
+gtk_comp_native_ver=$(ls -1 build-gtk/native-lisp)
+lucid_comp_native_ver=$(ls -1 build-lucid/native-lisp)
+nox_comp_native_ver=$(ls -1 build-nox/native-lisp)
+# cp -ar build-gtk/native-lisp/${gtk_comp_native_ver} %{buildroot}%{native_lisp}
+cp -ar build-lucid/native-lisp/${lucid_comp_native_ver} %{buildroot}%{native_lisp}
+cp -ar build-nox/native-lisp/${nox_comp_native_ver} %{buildroot}%{native_lisp}
+echo %{native_lisp}/${gtk_comp_native_ver} > eln-gtk.list
+echo %{native_lisp}/${lucid_comp_native_ver} > eln-lucid.list
+echo %{native_lisp}/${nox_comp_native_ver} > eln-nox.list
+
 %check
-appstream-util validate-relax --nonet %{buildroot}%{_datadir}/appdata/*.appdata.xml
+appstream-util validate-relax --nonet %{buildroot}/%{_metainfodir}/*.metainfo.xml
 desktop-file-validate %{buildroot}/%{_datadir}/applications/*.desktop
 
 %preun
@@ -434,24 +442,28 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/*.desktop
 %{_sbindir}/alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
        --slave %{_mandir}/man1/etags.1.gz emacs.etags.man %{_mandir}/man1/etags.emacs.1.gz || :
 
-%files
+%files -f eln-gtk.list
 %{_bindir}/emacs-%{version}
 %{_bindir}/emacs-%{version}.pdmp
 %attr(0755,-,-) %ghost %{_bindir}/emacs
 %{_datadir}/applications/emacs.desktop
-%{_datadir}/appdata/%{name}.appdata.xml
+%{_datadir}/applications/emacsclient.desktop
+%{_datadir}/applications/emacs-mail.desktop
+%{_datadir}/applications/emacsclient-mail.desktop
+%{_metainfodir}/%{name}.metainfo.xml
+# %{_datadir}/appdata/%{name}.appdata.xml
 %{_datadir}/icons/hicolor/*/apps/emacs.png
 %{_datadir}/icons/hicolor/scalable/apps/emacs.svg
 %{_datadir}/icons/hicolor/scalable/apps/emacs.ico
 %{_datadir}/icons/hicolor/scalable/mimetypes/emacs-document.svg
 
-%files lucid
+%files lucid -f eln-lucid.list
 %{_bindir}/emacs-%{version}-lucid
 %{_bindir}/emacs-%{version}-lucid.pdmp
 %attr(0755,-,-) %ghost %{_bindir}/emacs
 %attr(0755,-,-) %ghost %{_bindir}/emacs-lucid
 
-%files nox
+%files nox -f eln-nox.list
 %{_bindir}/emacs-%{version}-nox
 %{_bindir}/emacs-%{version}-nox.pdmp
 %attr(0755,-,-) %ghost %{_bindir}/emacs
@@ -490,6 +502,11 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/*.desktop
 %{_includedir}/emacs-module.h
 
 %changelog
+* Sat Jan  8 2022 Bhavin Gandhi <bhavin7392@gmail.com> - 1:28.0.90-1
+- Update to pretest 28.0.90
+- Build with Native Compilation support
+- Include upstream desktop entries for Emacs Client and mail
+
 * Sat Aug  7 2021 Dan Čermák <dan.cermak@cgc-instruments.com> - 1:27.2-9
 - Add Requires: info to fix info-mode
 - Fixes rhbz#1989264
