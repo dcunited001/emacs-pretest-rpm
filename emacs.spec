@@ -4,15 +4,14 @@
 Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
-Version:       28.0.92
-Release:       2%{?dist}
+Version:       28.1
+Release:       0.1%{?dist}
 License:       GPLv3+ and CC0
 URL:           http://www.gnu.org/software/emacs/
-Source0:       https://alpha.gnu.org/gnu/emacs/pretest/emacs-%{version}.tar.xz
-Source1:       https://alpha.gnu.org/gnu/emacs/pretest/emacs-%{version}.tar.xz.sig
-# get the Eli Zaretskii's key
-# gpg --keyserver pgp.mit.edu --recv-keys 17E90D521672C04631B1183EE78DAE0F3115E06B
-# gpg --armor --export 17E90D521672C04631B1183EE78DAE0F3115E06B > gpgkey-17E90D521672C04631B1183EE78DAE0F3115E06B.gpg
+Source0:       https://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.xz
+Source1:       https://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.xz.sig
+# get Eli Zaretskii's key
+# wget https://keys.openpgp.org/vks/v1/by-fingerprint/17E90D521672C04631B1183EE78DAE0F3115E06B -O gpgkey-17E90D521672C04631B1183EE78DAE0F3115E06B.gpg
 Source2:       gpgkey-17E90D521672C04631B1183EE78DAE0F3115E06B.gpg
 Source3:       https://git.savannah.gnu.org/gitweb/?p=gnulib.git;a=blob_plain;f=lib/cdefs.h;hb=refs/heads/master#./cdefs.h
 Source4:       dotemacs.el
@@ -21,7 +20,6 @@ Source6:       default.el
 # Emacs Terminal Mode, #551949, #617355
 Source7:       emacs-terminal.desktop
 Source8:       emacs-terminal.sh
-# Source10:      %{name}.appdata.xml
 # rhbz#713600
 Patch1:        emacs-spellchecker.patch
 Patch2:        emacs-system-crypto-policies.patch
@@ -196,7 +194,7 @@ Development header files for Emacs.
 %setup -q
 
 # workaround for ftbfs on ppc64, see https://bugzilla.redhat.com/show_bug.cgi?id=2045780#c8
-mv %{SOURCE3} lib/
+cp -a %{SOURCE3} lib/
 
 %patch1 -p1 -b .spellchecker
 %patch2 -p1 -b .system-crypto-policies
@@ -352,12 +350,6 @@ install -p -m 0644 %SOURCE4 %{buildroot}%{_sysconfdir}/skel/.emacs
 mkdir -p %{buildroot}/%{pkgconfig}
 install -p -m 0644 emacs.pc %{buildroot}/%{pkgconfig}
 
-# Install app data
-# mkdir -p %{buildroot}/%{_datadir}/appdata
-# cp -a %SOURCE10 %{buildroot}/%{_datadir}/appdata
-# # Upstream ships its own appdata file, but it's quite terse.
-# rm %{buildroot}/%{_metainfodir}/emacs.appdata.xml
-
 # Install rpm macro definition file
 mkdir -p %{buildroot}%{_rpmconfigdir}/macros.d
 install -p -m 0644 macros.emacs %{buildroot}%{_rpmconfigdir}/macros.d/
@@ -374,6 +366,11 @@ desktop-file-install --dir=%{buildroot}%{_datadir}/applications \
 
 # Remove duplicate desktop-related files
 rm %{buildroot}%{_datadir}/%{name}/%{version}/etc/%{name}.{desktop,service}
+
+# We don't ship the client variants yet
+# https://src.fedoraproject.org/rpms/emacs/pull-request/12
+rm %{buildroot}%{_datadir}/applications/emacsclient.desktop
+rm %{buildroot}%{_datadir}/applications/emacsclient-mail.desktop
 
 #
 # Create file lists
@@ -407,14 +404,11 @@ install -p -m 0644 build-lucid/src/emacs.pdmp %{buildroot}%{emacs_libexecdir}/${
 nox_pdmp="emacs-$(./build-nox/src/emacs --fingerprint 2>&1 | sed 's/.* //').pdmp"
 install -p -m 0644 build-nox/src/emacs.pdmp %{buildroot}%{emacs_libexecdir}/${nox_pdmp}
 
-# Remove the installed native compiled Lisp of GTK+
-# rm -r %{buildroot}%{native_lisp}/*
-
 # Install native compiled Lisp of all builds
 gtk_comp_native_ver=$(ls -1 build-gtk/native-lisp)
 lucid_comp_native_ver=$(ls -1 build-lucid/native-lisp)
 nox_comp_native_ver=$(ls -1 build-nox/native-lisp)
-# cp -ar build-gtk/native-lisp/${gtk_comp_native_ver} %{buildroot}%{native_lisp}
+cp -ar build-gtk/native-lisp/${gtk_comp_native_ver} %{buildroot}%{native_lisp}
 cp -ar build-lucid/native-lisp/${lucid_comp_native_ver} %{buildroot}%{native_lisp}
 cp -ar build-nox/native-lisp/${nox_comp_native_ver} %{buildroot}%{native_lisp}
 
@@ -463,11 +457,8 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/*.desktop
 %{_bindir}/emacs-%{version}
 %attr(0755,-,-) %ghost %{_bindir}/emacs
 %{_datadir}/applications/emacs.desktop
-%{_datadir}/applications/emacsclient.desktop
 %{_datadir}/applications/emacs-mail.desktop
-%{_datadir}/applications/emacsclient-mail.desktop
 %{_metainfodir}/%{name}.metainfo.xml
-# %{_datadir}/appdata/%{name}.appdata.xml
 %{_datadir}/icons/hicolor/*/apps/emacs.png
 %{_datadir}/icons/hicolor/scalable/apps/emacs.svg
 %{_datadir}/icons/hicolor/scalable/apps/emacs.ico
@@ -516,11 +507,22 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/*.desktop
 %{_includedir}/emacs-module.h
 
 %changelog
+* Tue May 10 2022 Bhavin Gandhi <bhavin7392@gmail.com> - 1:28.1-0.1
+- emacs-28.1 is available, fixes rhbz#2071638
+- Use upstream app data file
+- Same build as https://src.fedoraproject.org/rpms/emacs/pull-request/12
+
+* Wed Mar 23 2022 Dan Čermák <dan.cermak@cgc-instruments.com> - 1:27.2-11
+- Include upstream version of bundled glib cdefs.h, fixes rhbz#2045136
+
 * Sun Mar 20 2022 Bhavin Gandhi <bhavin7392@gmail.com> - 1:28.0.92-2
 - Use pdmp files with fingerprints
 
 * Fri Mar 18 2022 Bhavin Gandhi <bhavin7392@gmail.com> - 1:28.0.92-1
 - Update to pretest 28.0.92
+
+* Thu Jan 20 2022 Fedora Release Engineering <releng@fedoraproject.org> - 1:27.2-10
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_36_Mass_Rebuild
 
 * Tue Jan 11 2022 Bhavin Gandhi <bhavin7392@gmail.com> - 1:28.0.91-1
 - Update to pretest 28.0.91
@@ -530,12 +532,6 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/*.desktop
 - Update to pretest 28.0.90
 - Build with Native Compilation support
 - Include upstream desktop entries for Emacs Client and mail
-
-* Wed Mar 23 2022 Dan Čermák <dan.cermak@cgc-instruments.com> - 1:27.2-11
-- Include upstream version of bundled glib cdefs.h, fixes rhbz#2045136
-
-* Thu Jan 20 2022 Fedora Release Engineering <releng@fedoraproject.org> - 1:27.2-10
-- Rebuilt for https://fedoraproject.org/wiki/Fedora_36_Mass_Rebuild
 
 * Sat Aug  7 2021 Dan Čermák <dan.cermak@cgc-instruments.com> - 1:27.2-9
 - Add Requires: info to fix info-mode
