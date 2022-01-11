@@ -4,7 +4,7 @@
 Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
-Version:       28.0.90
+Version:       28.0.91
 Release:       1%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
@@ -238,19 +238,6 @@ ln -s ../../%{name}/%{version}/etc/NEWS doc
 export CFLAGS="-DMAIL_USE_LOCKF %{build_cflags}"
 %set_build_flags
 
-# Build GTK+ binary
-mkdir build-gtk && cd build-gtk
-ln -s ../configure .
-
-LDFLAGS=-Wl,-z,relro;  export LDFLAGS;
-
-%configure --with-dbus --with-gif --with-jpeg --with-png --with-rsvg \
-           --with-tiff --with-xft --with-xpm --with-x-toolkit=gtk3 --with-gpm=no \
-           --with-xwidgets --with-modules --with-harfbuzz --with-cairo --with-json \
-           --with-native-compilation
-%{setarch} %make_build # NATIVE_FULL_AOT=1
-cd ..
-
 # Build Lucid binary
 mkdir build-lucid && cd build-lucid
 ln -s ../configure .
@@ -261,14 +248,30 @@ LDFLAGS=-Wl,-z,relro;  export LDFLAGS;
            --with-tiff --with-xft --with-xpm --with-x-toolkit=lucid --with-gpm=no \
            --with-modules --with-harfbuzz --with-cairo --with-json \
            --with-native-compilation
-%{setarch} %make_build # NATIVE_FULL_AOT=1
+%{setarch} %make_build bootstrap NATIVE_FULL_AOT=1
+%{setarch} %make_build
 cd ..
 
 # Build binary without X support
 mkdir build-nox && cd build-nox
 ln -s ../configure .
 %configure --with-x=no --with-modules --with-json --with-native-compilation
-%{setarch} %make_build # NATIVE_FULL_AOT=1
+%{setarch} %make_build bootstrap NATIVE_FULL_AOT=1
+%{setarch} %make_build
+cd ..
+
+# Build GTK+ binary
+mkdir build-gtk && cd build-gtk
+ln -s ../configure .
+
+LDFLAGS=-Wl,-z,relro;  export LDFLAGS;
+
+%configure --with-dbus --with-gif --with-jpeg --with-png --with-rsvg \
+           --with-tiff --with-xft --with-xpm --with-x-toolkit=gtk3 --with-gpm=no \
+           --with-xwidgets --with-modules --with-harfbuzz --with-cairo --with-json \
+           --with-native-compilation
+%{setarch} %make_build bootstrap NATIVE_FULL_AOT=1
+%{setarch} %make_build
 cd ..
 
 # Remove versioned file so that we end up with .1 suffix and only one DOC file
@@ -502,6 +505,10 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/*.desktop
 %{_includedir}/emacs-module.h
 
 %changelog
+* Tue Jan 11 2022 Bhavin Gandhi <bhavin7392@gmail.com> - 1:28.0.91-1
+- Update to pretest 28.0.91
+- Natively compile all the .el files during build
+
 * Sat Jan  8 2022 Bhavin Gandhi <bhavin7392@gmail.com> - 1:28.0.90-1
 - Update to pretest 28.0.90
 - Build with Native Compilation support
