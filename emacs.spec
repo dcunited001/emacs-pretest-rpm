@@ -5,7 +5,7 @@ Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
 Version:       28.0.92
-Release:       1%{?dist}
+Release:       2%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Source0:       https://alpha.gnu.org/gnu/emacs/pretest/emacs-%{version}.tar.xz
@@ -25,6 +25,7 @@ Source8:       emacs-terminal.sh
 Patch1:        emacs-spellchecker.patch
 Patch2:        emacs-system-crypto-policies.patch
 Patch3:        emacs-libdir-vs-systemd.patch
+Patch4:        emacs-pdmp-fingerprint.patch
 
 BuildRequires: gcc
 BuildRequires: atk-devel
@@ -196,6 +197,7 @@ Development header files for Emacs.
 %patch1 -p1 -b .spellchecker
 %patch2 -p1 -b .system-crypto-policies
 %patch3 -p1 -b .libdir-vs-systemd
+%patch4 -p1 -b .pdmp-fingerprint
 autoconf
 
 grep -v "tetris.elc" lisp/Makefile.in > lisp/Makefile.in.new \
@@ -307,23 +309,15 @@ cd ..
 rm %{buildroot}%{_bindir}/emacs
 touch %{buildroot}%{_bindir}/emacs
 
-# Remove emacs.pdmp from common
-rm %{buildroot}%{emacs_libexecdir}/emacs.pdmp
-
 # Do not compress the files which implement compression itself (#484830)
 gunzip %{buildroot}%{_datadir}/emacs/%{version}/lisp/jka-compr.el.gz
 gunzip %{buildroot}%{_datadir}/emacs/%{version}/lisp/jka-cmpr-hook.el.gz
 
-# Install emacs.pdmp of the emacs with GTK+
-install -p -m 0644 build-gtk/src/emacs.pdmp %{buildroot}%{_bindir}/emacs-%{version}.pdmp
-
 # Install the emacs with LUCID toolkit
 install -p -m 0755 build-lucid/src/emacs %{buildroot}%{_bindir}/emacs-%{version}-lucid
-install -p -m 0644 build-lucid/src/emacs.pdmp %{buildroot}%{_bindir}/emacs-%{version}-lucid.pdmp
 
 # Install the emacs without X
 install -p -m 0755 build-nox/src/emacs %{buildroot}%{_bindir}/emacs-%{version}-nox
-install -p -m 0644 build-nox/src/emacs.pdmp %{buildroot}%{_bindir}/emacs-%{version}-nox.pdmp
 
 # Make sure movemail isn't setgid
 chmod 755 %{buildroot}%{emacs_libexecdir}/movemail
@@ -399,6 +393,16 @@ cat el-*-files common-lisp-dir-files > el-filelist
 # Remove old icon
 rm %{buildroot}%{_datadir}/icons/hicolor/scalable/mimetypes/emacs-document23.svg
 
+# Install all the pdmp with fingerprints
+gtk_pdmp="emacs-$(./build-gtk/src/emacs --fingerprint 2>&1 | sed 's/.* //').pdmp"
+install -p -m 0644 build-gtk/src/emacs.pdmp %{buildroot}%{emacs_libexecdir}/${gtk_pdmp}
+
+lucid_pdmp="emacs-$(./build-lucid/src/emacs --fingerprint 2>&1 | sed 's/.* //').pdmp"
+install -p -m 0644 build-lucid/src/emacs.pdmp %{buildroot}%{emacs_libexecdir}/${lucid_pdmp}
+
+nox_pdmp="emacs-$(./build-nox/src/emacs --fingerprint 2>&1 | sed 's/.* //').pdmp"
+install -p -m 0644 build-nox/src/emacs.pdmp %{buildroot}%{emacs_libexecdir}/${nox_pdmp}
+
 # Remove the installed native compiled Lisp of GTK+
 # rm -r %{buildroot}%{native_lisp}/*
 
@@ -409,9 +413,14 @@ nox_comp_native_ver=$(ls -1 build-nox/native-lisp)
 # cp -ar build-gtk/native-lisp/${gtk_comp_native_ver} %{buildroot}%{native_lisp}
 cp -ar build-lucid/native-lisp/${lucid_comp_native_ver} %{buildroot}%{native_lisp}
 cp -ar build-nox/native-lisp/${nox_comp_native_ver} %{buildroot}%{native_lisp}
-echo %{native_lisp}/${gtk_comp_native_ver} > eln-gtk.list
-echo %{native_lisp}/${lucid_comp_native_ver} > eln-lucid.list
-echo %{native_lisp}/${nox_comp_native_ver} > eln-nox.list
+
+# List of binary specific files
+echo %{emacs_libexecdir}/${gtk_pdmp} > gtk-filelist
+echo %{emacs_libexecdir}/${lucid_pdmp} > lucid-filelist
+echo %{emacs_libexecdir}/${nox_pdmp} > nox-filelist
+echo %{native_lisp}/${gtk_comp_native_ver} >> gtk-filelist
+echo %{native_lisp}/${lucid_comp_native_ver} >> lucid-filelist
+echo %{native_lisp}/${nox_comp_native_ver} >> nox-filelist
 
 %check
 appstream-util validate-relax --nonet %{buildroot}/%{_metainfodir}/*.metainfo.xml
@@ -446,9 +455,8 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/*.desktop
 %{_sbindir}/alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
        --slave %{_mandir}/man1/etags.1.gz emacs.etags.man %{_mandir}/man1/etags.emacs.1.gz || :
 
-%files -f eln-gtk.list
+%files -f gtk-filelist
 %{_bindir}/emacs-%{version}
-%{_bindir}/emacs-%{version}.pdmp
 %attr(0755,-,-) %ghost %{_bindir}/emacs
 %{_datadir}/applications/emacs.desktop
 %{_datadir}/applications/emacsclient.desktop
@@ -461,15 +469,13 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/*.desktop
 %{_datadir}/icons/hicolor/scalable/apps/emacs.ico
 %{_datadir}/icons/hicolor/scalable/mimetypes/emacs-document.svg
 
-%files lucid -f eln-lucid.list
+%files lucid -f lucid-filelist
 %{_bindir}/emacs-%{version}-lucid
-%{_bindir}/emacs-%{version}-lucid.pdmp
 %attr(0755,-,-) %ghost %{_bindir}/emacs
 %attr(0755,-,-) %ghost %{_bindir}/emacs-lucid
 
-%files nox -f eln-nox.list
+%files nox -f nox-filelist
 %{_bindir}/emacs-%{version}-nox
-%{_bindir}/emacs-%{version}-nox.pdmp
 %attr(0755,-,-) %ghost %{_bindir}/emacs
 %attr(0755,-,-) %ghost %{_bindir}/emacs-nox
 
@@ -506,6 +512,9 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/*.desktop
 %{_includedir}/emacs-module.h
 
 %changelog
+* Sun Mar 20 2022 Bhavin Gandhi <bhavin7392@gmail.com> - 1:28.0.92-2
+- Use pdmp files with fingerprints
+
 * Fri Mar 18 2022 Bhavin Gandhi <bhavin7392@gmail.com> - 1:28.0.92-1
 - Update to pretest 28.0.92
 
