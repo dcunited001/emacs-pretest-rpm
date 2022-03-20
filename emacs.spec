@@ -4,15 +4,16 @@
 Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
-Version:       28.0.91
+Version:       28.0.92
 Release:       1%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Source0:       https://alpha.gnu.org/gnu/emacs/pretest/emacs-%{version}.tar.xz
 Source1:       https://alpha.gnu.org/gnu/emacs/pretest/emacs-%{version}.tar.xz.sig
-# get the Stefan Kangas' key
-# wget https://keys.openpgp.org/vks/v1/by-fingerprint/CEA1DE21AB108493CC9C65742E82323B8F4353EE -O gpgkey-CEA1DE21AB108493CC9C65742E82323B8F4353EE.gpg
-Source2:       gpgkey-CEA1DE21AB108493CC9C65742E82323B8F4353EE.gpg
+# get the Eli Zaretskii's key
+# gpg --keyserver pgp.mit.edu --recv-keys 17E90D521672C04631B1183EE78DAE0F3115E06B
+# gpg --armor --export 17E90D521672C04631B1183EE78DAE0F3115E06B > gpgkey-17E90D521672C04631B1183EE78DAE0F3115E06B.gpg
+Source2:       gpgkey-17E90D521672C04631B1183EE78DAE0F3115E06B.gpg
 Source4:       dotemacs.el
 Source5:       site-start.el
 Source6:       default.el
@@ -505,6 +506,9 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/*.desktop
 %{_includedir}/emacs-module.h
 
 %changelog
+* Fri Mar 18 2022 Bhavin Gandhi <bhavin7392@gmail.com> - 1:28.0.92-1
+- Update to pretest 28.0.92
+
 * Tue Jan 11 2022 Bhavin Gandhi <bhavin7392@gmail.com> - 1:28.0.91-1
 - Update to pretest 28.0.91
 - Natively compile all the .el files during build
