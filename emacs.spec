@@ -4,15 +4,15 @@
 Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
-Version:       28.1
-Release:       0.1%{?dist}
+Version:       28.1.90
+Release:       1%{?dist}
 License:       GPLv3+ and CC0
 URL:           http://www.gnu.org/software/emacs/
-Source0:       https://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.xz
-Source1:       https://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.xz.sig
-# get Eli Zaretskii's key
-# wget https://keys.openpgp.org/vks/v1/by-fingerprint/17E90D521672C04631B1183EE78DAE0F3115E06B -O gpgkey-17E90D521672C04631B1183EE78DAE0F3115E06B.gpg
-Source2:       gpgkey-17E90D521672C04631B1183EE78DAE0F3115E06B.gpg
+Source0:       https://alpha.gnu.org/gnu/emacs/pretest/emacs-%{version}.tar.xz
+Source1:       https://alpha.gnu.org/gnu/emacs/pretest/emacs-%{version}.tar.xz.sig
+# get the Stefan Kangas' key
+# wget https://keys.openpgp.org/vks/v1/by-fingerprint/CEA1DE21AB108493CC9C65742E82323B8F4353EE -O gpgkey-CEA1DE21AB108493CC9C65742E82323B8F4353EE.gpg
+Source2:       gpgkey-CEA1DE21AB108493CC9C65742E82323B8F4353EE.gpg
 Source3:       https://git.savannah.gnu.org/gitweb/?p=gnulib.git;a=blob_plain;f=lib/cdefs.h;hb=refs/heads/master#./cdefs.h
 Source4:       dotemacs.el
 Source5:       site-start.el
@@ -507,6 +507,9 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/*.desktop
 %{_includedir}/emacs-module.h
 
 %changelog
+* Wed Jul  6 2022 Bhavin Gandhi <bhavin7392@gmail.com> - 1:28.1.90
+- Update to pretest 28.1.90
+
 * Tue May 10 2022 Bhavin Gandhi <bhavin7392@gmail.com> - 1:28.1-0.1
 - emacs-28.1 is available, fixes rhbz#2071638
 - Use upstream app data file
