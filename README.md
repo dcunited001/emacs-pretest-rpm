@@ -52,3 +52,9 @@ for the full license text.
 If you face any issues while installing or updating, please create an
 issue on [GitLab repository
 here](https://gitlab.com/bhavin192/emacs-pretest-rpm).
+
+# notes
+
+- /usr/bin/emacs-28.1.90-gtk
+- /usr/lib/debug/usr/bin/emacs-28.1.90-gtk-28.1.90-1.fc36.x86_64.debug
+

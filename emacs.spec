@@ -318,11 +318,14 @@ touch %{buildroot}%{_bindir}/emacs
 gunzip %{buildroot}%{_datadir}/emacs/%{version}/lisp/jka-compr.el.gz
 gunzip %{buildroot}%{_datadir}/emacs/%{version}/lisp/jka-cmpr-hook.el.gz
 
+# Install the pGTK emacs
+install -p -m 0755 build-gtk/src/emacs %{buildroot}%{_bindir}/emacs-%{version}-gtk
+
 # Install the emacs with LUCID toolkit
 # install -p -m 0755 build-lucid/src/emacs %{buildroot}%{_bindir}/emacs-%{version}-lucid
 
 # Install the emacs without X
-# install -p -m 0755 build-no/sxrc/emacs %{buildroot}%{_bindir}/emacs-%{version}-nox
+# install -p -m 0755 build-nox/src/emacs %{buildroot}%{_bindir}/emacs-%{version}-nox
 
 # Make sure movemail isn't setgid
 chmod 755 %{buildroot}%{emacs_libexecdir}/movemail
@@ -462,7 +465,9 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/*.desktop
 
 %files -f gtk-filelist
 %{_bindir}/emacs-%{version}
+%{_bindir}/emacs-%{version}-gtk
 %attr(0755,-,-) %ghost %{_bindir}/emacs
+%attr(0755,-,-) %ghost %{_bindir}/emacs-gtk
 %{_datadir}/applications/emacs.desktop
 %{_datadir}/applications/emacsclient.desktop
 %{_datadir}/applications/emacs-mail.desktop
@@ -513,6 +518,9 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/*.desktop
 
 %files devel
 %{_includedir}/emacs-module.h
+
+#%files
+#%{_prefix}
 
 %changelog
 * Wed Jul  6 2022 Bhavin Gandhi <bhavin7392@gmail.com> - 1:28.1.90
