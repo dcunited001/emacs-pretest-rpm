@@ -21,7 +21,7 @@ Source6:       default.el
 Source7:       emacs-terminal.desktop
 Source8:       emacs-terminal.sh
 Source9:       emacs.desktop
-Source10:       emacsclient.desktop
+Source10:      emacsclient.desktop
 # rhbz#713600
 Patch1:        emacs-spellchecker.patch
 Patch2:        emacs-system-crypto-policies.patch
@@ -376,7 +376,7 @@ rm %{buildroot}%{_datadir}/%{name}/%{version}/etc/%{name}.{desktop,service}
 
 # We don't ship the client variants yet
 # https://src.fedoraproject.org/rpms/emacs/pull-request/12
-rm %{buildroot}%{_datadir}/applications/emacsclient.desktop
+# rm %{buildroot}%{_datadir}/applications/emacsclient.desktop
 rm %{buildroot}%{_datadir}/applications/emacsclient-mail.desktop
 
 #

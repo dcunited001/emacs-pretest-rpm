@@ -12,7 +12,7 @@ Encoding=UTF-8
 StartupNotify=true
 StartupWMClass=Emacs
 
-Actions=debug-init;debug-gtk;debug-server;debug-server-gtk;
+Actions=debug-init;debug-gtk;debug-server;debug-server-gtk
 
 # TODO: ensure GUIX paths are correctly set (or these won't really work)
 

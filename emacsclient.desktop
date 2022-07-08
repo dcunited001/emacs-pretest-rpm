@@ -10,7 +10,7 @@ Categories=Development;TextEditor;
 StartupNotify=true
 StartupWMClass=Emacs
 Keywords=emacsclient;
-Exec=emacsclient --alternate-editor='alacritty -e vim' --create-frame %F
+Exec=emacsclient --alternate-editor=\"alacritty -e vim\" --create-frame %F
 
 # These are for XServer ($DISPLAY with crash the emacs daemon)
 #Exec=sh -c "if [ -n \\"\\$*\\" ]; then exec emacsclient --alternate-editor= --display=\\"\\$DISPLAY\\" \\"\\$@\\"; else exec emacsclient --alternate-editor= --create-frame; fi" placeholder %F
