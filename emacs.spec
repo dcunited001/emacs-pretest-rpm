@@ -20,6 +20,8 @@ Source6:       default.el
 # Emacs Terminal Mode, #551949, #617355
 Source7:       emacs-terminal.desktop
 Source8:       emacs-terminal.sh
+Source9:       emacs.desktop
+Source10:       emacsclient.desktop
 # rhbz#713600
 Patch1:        emacs-spellchecker.patch
 Patch2:        emacs-system-crypto-policies.patch
@@ -274,7 +276,7 @@ LDFLAGS=-Wl,-z,relro;  export LDFLAGS;
 %configure --with-dbus --with-gif --with-jpeg --with-png --with-rsvg \
            --with-tiff --with-xpm --with-x-toolkit=gtk3 --with-gpm=yes \
            --with-xwidgets --with-modules --with-harfbuzz --with-cairo --with-json \
-           --with-native-compilation
+           --with-native-compilation --with-pgtk --without-xaw3d
 %{setarch} %make_build bootstrap NATIVE_FULL_AOT=1
 %{setarch} %make_build
 cd ..
@@ -364,6 +366,10 @@ rm -f %{buildroot}%{_infodir}/dir
 # Install desktop files
 desktop-file-install --dir=%{buildroot}%{_datadir}/applications \
                      %SOURCE7
+desktop-file-install --dir=%{buildroot}%{_datadir}/applications \
+                     %SOURCE9
+desktop-file-install --dir=%{buildroot}%{_datadir}/applications \
+                     %SOURCE10
 
 # Remove duplicate desktop-related files
 rm %{buildroot}%{_datadir}/%{name}/%{version}/etc/%{name}.{desktop,service}
@@ -458,6 +464,7 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/*.desktop
 %{_bindir}/emacs-%{version}
 %attr(0755,-,-) %ghost %{_bindir}/emacs
 %{_datadir}/applications/emacs.desktop
+%{_datadir}/applications/emacsclient.desktop
 %{_datadir}/applications/emacs-mail.desktop
 %{_metainfodir}/%{name}.metainfo.xml
 %{_datadir}/icons/hicolor/*/apps/emacs.png
