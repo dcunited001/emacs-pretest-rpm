@@ -75,7 +75,7 @@ BuildRequires: webkit2gtk3-devel
 BuildRequires: gnupg2
 
 # For lucid
-BuildRequires: Xaw3d-devel
+# BuildRequires: Xaw3d-devel
 
 %ifarch %{ix86}
 BuildRequires: util-linux
@@ -108,39 +108,39 @@ without leaving the editor.
 
 This package provides an emacs binary with support for X windows.
 
-%package lucid
-Summary:       GNU Emacs text editor with LUCID toolkit X support
-Requires:      libgccjit
-Requires(preun): %{_sbindir}/alternatives
-Requires(posttrans): %{_sbindir}/alternatives
-Requires:      emacs-common = %{epoch}:%{version}-%{release}
-Provides:      emacs(bin) = %{epoch}:%{version}-%{release}
+# %package lucid
+# Summary:       GNU Emacs text editor with LUCID toolkit X support
+# Requires:      libgccjit
+# Requires(preun): %{_sbindir}/alternatives
+# Requires(posttrans): %{_sbindir}/alternatives
+# Requires:      emacs-common = %{epoch}:%{version}-%{release}
+# Provides:      emacs(bin) = %{epoch}:%{version}-%{release}
 
-%description lucid
-Emacs is a powerful, customizable, self-documenting, modeless text
-editor. Emacs contains special code editing features, a scripting
-language (elisp), and the capability to read mail, news, and more
-without leaving the editor.
+# %description lucid
+# Emacs is a powerful, customizable, self-documenting, modeless text
+# editor. Emacs contains special code editing features, a scripting
+# language (elisp), and the capability to read mail, news, and more
+# without leaving the editor.
 
-This package provides an emacs binary with support for X windows
-using LUCID toolkit.
+# This package provides an emacs binary with support for X windows
+# using LUCID toolkit.
 
-%package nox
-Summary:       GNU Emacs text editor without X support
-Requires:      libgccjit
-Requires(preun): %{_sbindir}/alternatives
-Requires(posttrans): %{_sbindir}/alternatives
-Requires:      emacs-common = %{epoch}:%{version}-%{release}
-Provides:      emacs(bin) = %{epoch}:%{version}-%{release}
+# %package nox
+# Summary:       GNU Emacs text editor without X support
+# Requires:      libgccjit
+# Requires(preun): %{_sbindir}/alternatives
+# Requires(posttrans): %{_sbindir}/alternatives
+# Requires:      emacs-common = %{epoch}:%{version}-%{release}
+# Provides:      emacs(bin) = %{epoch}:%{version}-%{release}
 
-%description nox
-Emacs is a powerful, customizable, self-documenting, modeless text
-editor. Emacs contains special code editing features, a scripting
-language (elisp), and the capability to read mail, news, and more
-without leaving the editor.
+# %description nox
+# Emacs is a powerful, customizable, self-documenting, modeless text
+# editor. Emacs contains special code editing features, a scripting
+# language (elisp), and the capability to read mail, news, and more
+# without leaving the editor.
 
-This package provides an emacs binary with no X windows support for running
-on a terminal.
+# This package provides an emacs binary with no X windows support for running
+# on a terminal.
 
 %package common
 Summary:       Emacs common files
@@ -243,27 +243,27 @@ ln -s ../../%{name}/%{version}/etc/NEWS doc
 export CFLAGS="-DMAIL_USE_LOCKF %{build_cflags}"
 %set_build_flags
 
-# Build Lucid binary
-mkdir build-lucid && cd build-lucid
-ln -s ../configure .
+# # Build Lucid binary
+# mkdir build-lucid && cd build-lucid
+# ln -s ../configure .
 
-LDFLAGS=-Wl,-z,relro;  export LDFLAGS;
+# LDFLAGS=-Wl,-z,relro;  export LDFLAGS;
 
-%configure --with-dbus --with-gif --with-jpeg --with-png --with-rsvg \
-           --with-tiff --with-xft --with-xpm --with-x-toolkit=lucid --with-gpm=no \
-           --with-modules --with-harfbuzz --with-cairo --with-json \
-           --with-native-compilation
-%{setarch} %make_build bootstrap NATIVE_FULL_AOT=1
-%{setarch} %make_build
-cd ..
+# %configure --with-dbus --with-gif --with-jpeg --with-png --with-rsvg \
+#            --with-tiff --with-xft --with-xpm --with-x-toolkit=lucid --with-gpm=no \
+#            --with-modules --with-harfbuzz --with-cairo --with-json \
+#            --with-native-compilation
+# %{setarch} %make_build bootstrap NATIVE_FULL_AOT=1
+# %{setarch} %make_build
+# cd ..
 
-# Build binary without X support
-mkdir build-nox && cd build-nox
-ln -s ../configure .
-%configure --with-x=no --with-modules --with-json --with-native-compilation
-%{setarch} %make_build bootstrap NATIVE_FULL_AOT=1
-%{setarch} %make_build
-cd ..
+# # Build binary without X support
+# mkdir build-nox && cd build-nox
+# ln -s ../configure .
+# %configure --with-x=no --with-modules --with-json --with-native-compilation
+# %{setarch} %make_build bootstrap NATIVE_FULL_AOT=1
+# %{setarch} %make_build
+# cd ..
 
 # Build GTK+ binary
 mkdir build-gtk && cd build-gtk
@@ -272,7 +272,7 @@ ln -s ../configure .
 LDFLAGS=-Wl,-z,relro;  export LDFLAGS;
 
 %configure --with-dbus --with-gif --with-jpeg --with-png --with-rsvg \
-           --with-tiff --with-xft --with-xpm --with-x-toolkit=gtk3 --with-gpm=no \
+           --with-tiff --with-xpm --with-x-toolkit=gtk3 --with-gpm=yes \
            --with-xwidgets --with-modules --with-harfbuzz --with-cairo --with-json \
            --with-native-compilation
 %{setarch} %make_build bootstrap NATIVE_FULL_AOT=1
@@ -280,7 +280,8 @@ LDFLAGS=-Wl,-z,relro;  export LDFLAGS;
 cd ..
 
 # Remove versioned file so that we end up with .1 suffix and only one DOC file
-rm build-{gtk,lucid,nox}/src/emacs-%{version}.*
+# rm build-{gtk,lucid,nox}/src/emacs-%{version}.*
+rm build-gtk/src/emacs-%{version}.*
 
 # Create pkgconfig file
 cat > emacs.pc << EOF
@@ -316,10 +317,10 @@ gunzip %{buildroot}%{_datadir}/emacs/%{version}/lisp/jka-compr.el.gz
 gunzip %{buildroot}%{_datadir}/emacs/%{version}/lisp/jka-cmpr-hook.el.gz
 
 # Install the emacs with LUCID toolkit
-install -p -m 0755 build-lucid/src/emacs %{buildroot}%{_bindir}/emacs-%{version}-lucid
+# install -p -m 0755 build-lucid/src/emacs %{buildroot}%{_bindir}/emacs-%{version}-lucid
 
 # Install the emacs without X
-install -p -m 0755 build-nox/src/emacs %{buildroot}%{_bindir}/emacs-%{version}-nox
+# install -p -m 0755 build-no/sxrc/emacs %{buildroot}%{_bindir}/emacs-%{version}-nox
 
 # Make sure movemail isn't setgid
 chmod 755 %{buildroot}%{emacs_libexecdir}/movemail
@@ -398,27 +399,27 @@ rm %{buildroot}%{_datadir}/icons/hicolor/scalable/mimetypes/emacs-document23.svg
 gtk_pdmp="emacs-$(./build-gtk/src/emacs --fingerprint 2>&1 | sed 's/.* //').pdmp"
 install -p -m 0644 build-gtk/src/emacs.pdmp %{buildroot}%{emacs_libexecdir}/${gtk_pdmp}
 
-lucid_pdmp="emacs-$(./build-lucid/src/emacs --fingerprint 2>&1 | sed 's/.* //').pdmp"
-install -p -m 0644 build-lucid/src/emacs.pdmp %{buildroot}%{emacs_libexecdir}/${lucid_pdmp}
+# lucid_pdmp="emacs-$(./build-lucid/src/emacs --fingerprint 2>&1 | sed 's/.* //').pdmp"
+# install -p -m 0644 build-lucid/src/emacs.pdmp %{buildroot}%{emacs_libexecdir}/${lucid_pdmp}
 
-nox_pdmp="emacs-$(./build-nox/src/emacs --fingerprint 2>&1 | sed 's/.* //').pdmp"
-install -p -m 0644 build-nox/src/emacs.pdmp %{buildroot}%{emacs_libexecdir}/${nox_pdmp}
+# nox_pdmp="emacs-$(./build-nox/src/emacs --fingerprint 2>&1 | sed 's/.* //').pdmp"
+# install -p -m 0644 build-nox/src/emacs.pdmp %{buildroot}%{emacs_libexecdir}/${nox_pdmp}
 
 # Install native compiled Lisp of all builds
 gtk_comp_native_ver=$(ls -1 build-gtk/native-lisp)
-lucid_comp_native_ver=$(ls -1 build-lucid/native-lisp)
-nox_comp_native_ver=$(ls -1 build-nox/native-lisp)
+# lucid_comp_native_ver=$(ls -1 build-lucid/native-lisp)
+# nox_comp_native_ver=$(ls -1 build-nox/native-lisp)
 cp -ar build-gtk/native-lisp/${gtk_comp_native_ver} %{buildroot}%{native_lisp}
-cp -ar build-lucid/native-lisp/${lucid_comp_native_ver} %{buildroot}%{native_lisp}
-cp -ar build-nox/native-lisp/${nox_comp_native_ver} %{buildroot}%{native_lisp}
+# cp -ar build-lucid/native-lisp/${lucid_comp_native_ver} %{buildroot}%{native_lisp}
+# cp -ar build-nox/native-lisp/${nox_comp_native_ver} %{buildroot}%{native_lisp}
 
 # List of binary specific files
 echo %{emacs_libexecdir}/${gtk_pdmp} > gtk-filelist
-echo %{emacs_libexecdir}/${lucid_pdmp} > lucid-filelist
-echo %{emacs_libexecdir}/${nox_pdmp} > nox-filelist
+# echo %{emacs_libexecdir}/${lucid_pdmp} > lucid-filelist
+# echo %{emacs_libexecdir}/${nox_pdmp} > nox-filelist
 echo %{native_lisp}/${gtk_comp_native_ver} >> gtk-filelist
-echo %{native_lisp}/${lucid_comp_native_ver} >> lucid-filelist
-echo %{native_lisp}/${nox_comp_native_ver} >> nox-filelist
+# echo %{native_lisp}/${lucid_comp_native_ver} >> lucid-filelist
+# echo %{native_lisp}/${nox_comp_native_ver} >> nox-filelist
 
 %check
 appstream-util validate-relax --nonet %{buildroot}/%{_metainfodir}/*.metainfo.xml
@@ -430,21 +431,21 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/*.desktop
 %posttrans
 %{_sbindir}/alternatives --install %{_bindir}/emacs emacs %{_bindir}/emacs-%{version} 80 || :
 
-%preun lucid
-%{_sbindir}/alternatives --remove emacs %{_bindir}/emacs-%{version}-lucid || :
-%{_sbindir}/alternatives --remove emacs-lucid %{_bindir}/emacs-%{version}-lucid || :
+# %preun lucid
+# %{_sbindir}/alternatives --remove emacs %{_bindir}/emacs-%{version}-lucid || :
+# %{_sbindir}/alternatives --remove emacs-lucid %{_bindir}/emacs-%{version}-lucid || :
 
-%posttrans lucid
-%{_sbindir}/alternatives --install %{_bindir}/emacs emacs %{_bindir}/emacs-%{version}-lucid 70 || :
-%{_sbindir}/alternatives --install %{_bindir}/emacs-lucid emacs-lucid %{_bindir}/emacs-%{version}-lucid 60 || :
+# %posttrans lucid
+# %{_sbindir}/alternatives --install %{_bindir}/emacs emacs %{_bindir}/emacs-%{version}-lucid 70 || :
+# %{_sbindir}/alternatives --install %{_bindir}/emacs-lucid emacs-lucid %{_bindir}/emacs-%{version}-lucid 60 || :
 
-%preun nox
-%{_sbindir}/alternatives --remove emacs %{_bindir}/emacs-%{version}-nox || :
-%{_sbindir}/alternatives --remove emacs-nox %{_bindir}/emacs-%{version}-nox || :
+# %preun nox
+# %{_sbindir}/alternatives --remove emacs %{_bindir}/emacs-%{version}-nox || :
+# %{_sbindir}/alternatives --remove emacs-nox %{_bindir}/emacs-%{version}-nox || :
 
-%posttrans nox
-%{_sbindir}/alternatives --install %{_bindir}/emacs emacs %{_bindir}/emacs-%{version}-nox 70 || :
-%{_sbindir}/alternatives --install %{_bindir}/emacs-nox emacs-nox %{_bindir}/emacs-%{version}-nox 60 || :
+# %posttrans nox
+# %{_sbindir}/alternatives --install %{_bindir}/emacs emacs %{_bindir}/emacs-%{version}-nox 70 || :
+# %{_sbindir}/alternatives --install %{_bindir}/emacs-nox emacs-nox %{_bindir}/emacs-%{version}-nox 60 || :
 
 %preun common
 %{_sbindir}/alternatives --remove emacs.etags %{_bindir}/etags.emacs || :
@@ -464,15 +465,15 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/*.desktop
 %{_datadir}/icons/hicolor/scalable/apps/emacs.ico
 %{_datadir}/icons/hicolor/scalable/mimetypes/emacs-document.svg
 
-%files lucid -f lucid-filelist
-%{_bindir}/emacs-%{version}-lucid
-%attr(0755,-,-) %ghost %{_bindir}/emacs
-%attr(0755,-,-) %ghost %{_bindir}/emacs-lucid
+# %files lucid -f lucid-filelist
+# %{_bindir}/emacs-%{version}-lucid
+# %attr(0755,-,-) %ghost %{_bindir}/emacs
+# %attr(0755,-,-) %ghost %{_bindir}/emacs-lucid
 
-%files nox -f nox-filelist
-%{_bindir}/emacs-%{version}-nox
-%attr(0755,-,-) %ghost %{_bindir}/emacs
-%attr(0755,-,-) %ghost %{_bindir}/emacs-nox
+# %files nox -f nox-filelist
+# %{_bindir}/emacs-%{version}-nox
+# %attr(0755,-,-) %ghost %{_bindir}/emacs
+# %attr(0755,-,-) %ghost %{_bindir}/emacs-nox
 
 %files common -f common-filelist -f el-filelist
 %config(noreplace) %{_sysconfdir}/skel/.emacs
